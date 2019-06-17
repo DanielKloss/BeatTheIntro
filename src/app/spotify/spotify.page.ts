@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 
 import { SpotifyAuthService } from '../services/spotifyAuth.service';
 import { SpotifyApiService } from '../services/spotifyApi.service';
+import { SpotifyPlaylist } from '../models/spotifyPlaylist';
+import { SpotifyTrack } from '../models/spotifyTrack';
 
 @Component({
   selector: 'app-spotify',
@@ -12,7 +14,7 @@ export class SpotifyPage implements OnInit {
 
   private token;
 
-  private tracks: string[];
+  private tracks: SpotifyTrack[];
 
   constructor(private spotifyAuthService: SpotifyAuthService, private spotifyApiService: SpotifyApiService) { }
 
@@ -23,14 +25,14 @@ export class SpotifyPage implements OnInit {
       this.spotifyAuthService.generateToken();
     }
 
-    this.spotifyApiService.getPlaylists().subscribe(p => this.getIdsOfTracksInPlaylists(p)), error => console.log(error);
+    this.getSongs();
   }
 
-  getIdsOfTracksInPlaylists(playlists) {
-    let tracks = []
-    playlists['items'].forEach(playlist => {
-      this.spotifyApiService.getTracksFromPlaylist(playlist['tracks']['href']).subscribe(t => tracks.push(t['items']), error => console.log(error));
-    });
-    console.log(tracks);
+  async getSongs() {
+    let playlists: SpotifyPlaylist[] = await this.spotifyApiService.getPlaylists().toPromise();
+
+    for (let i = 0; i < playlists.length; i++) {
+      this.tracks = this.tracks.concat(await this.spotifyApiService.getListOfTracksFromPlaylist(playlists[i].href).toPromise());
+    }
   }
 } 
