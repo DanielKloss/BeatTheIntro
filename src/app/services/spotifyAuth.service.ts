@@ -2,17 +2,19 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
+import { SpotifyConfig } from '../models/spotifyConfig';
+
 @Injectable({ providedIn: 'root' })
 export class SpotifyAuthService {
 
     private token: string;
+    private spotifyConfig: SpotifyConfig;
 
-    private baseUrl: string = 'https://accounts.spotify.com/authorize';
-    private redirectUrl: string = 'http://localhost:8100/spotify';
-    private clientId: string;
     private scopes: string[] = ["streaming", "user-read-birthdate", "user-read-email", "user-read-private", "playlist-read-private", "playlist-read-collaborative"];
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) {
+        this.spotifyConfig = new SpotifyConfig();
+    }
 
     getTokenFromUrl(): string {
         // Get the hash of the url
@@ -34,8 +36,8 @@ export class SpotifyAuthService {
     }
 
     async generateToken() {
-        this.clientId = await this.http.get("../assets/config.json").pipe(map(res => res["clientId"])).toPromise();
-        window.location.href = this.baseUrl + '?client_id=' + this.clientId + '&redirect_uri=' + this.redirectUrl + '&scope=' + encodeURIComponent(this.scopes.join(' ')) + '&response_type=token';
+        await this.http.get("../assets/config.json").pipe(map<SpotifyConfig, SpotifyConfig>(res => this.spotifyConfig = res)).toPromise();
+        window.location.href = this.spotifyConfig.spotifyApiUrl + '?client_id=' + this.spotifyConfig.clientId + '&redirect_uri=' + this.spotifyConfig.redirectUrl + '&scope=' + encodeURIComponent(this.scopes.join(' ')) + '&response_type=token';
     }
 
     getToken() {
