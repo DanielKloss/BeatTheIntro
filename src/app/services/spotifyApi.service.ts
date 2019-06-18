@@ -6,6 +6,8 @@ import { catchError, map, tap } from 'rxjs/operators';
 
 import { SpotifyPlaylist } from '../models/spotifyPlaylist';
 import { SpotifyTrack } from '../models/spotifyTrack';
+import { SpotifyAlbum } from '../models/spotifyAlbum';
+import { SpotifyArtist } from '../models/spotifyArtist';
 
 @Injectable({ providedIn: 'root' })
 export class SpotifyApiService {
@@ -24,26 +26,83 @@ export class SpotifyApiService {
                             tracks: playlist["tracks"]["href"],
                             numberOfTracks: playlist["tracks"]["total"],
                             uri: playlist["uri"]
-                        }))
-                }
-                ));
+                        })
+                    );
+                })
+            );
     }
 
-    getListOfTracksFromPlaylist(playlistHref) {
-        return this.http.get(playlistHref + '/tracks')
+    getArtists(): Observable<SpotifyArtist[]> {
+        return this.http.get('https://api.spotify.com/v1/me/following?type=artist')
+            .pipe(
+                map(response => {
+                    return response["artists"]["items"].map(artist =>
+                        new SpotifyArtist({
+                            href: artist["href"],
+                            id: artist["id"],
+                            name: artist["name"],
+                            uri: artist["uri"]
+                        })
+                    );
+                })
+            )
+    }
+
+    getSongs(): Observable<SpotifyTrack[]> {
+        return this.http.get('https://api.spotify.com/v1/me/tracks')
             .pipe(
                 map(response => {
                     return response["items"].map(track =>
-                        // console.log(track["track"]["uri"])
                         new SpotifyTrack({
                             album: track["track"]["album"]["name"],
-                            artist: track["track"]["artists"][0]["name"],
+                            artist: new SpotifyArtist({
+                                name: track["track"]["artists"][0]["name"],
+                                href: track["track"]["artist"][0]["href"],
+                                id: track["track"]["artist"][0]["id"],
+                                uri: track["track"]["artist"][0]["uri"]
+                            }),
                             name: track["track"]["name"],
                             uri: track["track"]["uri"]
                         })
                     );
-                }
-                )
+                })
+            )
+    }
+
+    getListOfTracksFromPlaylist(baseHref): Observable<SpotifyTrack[]> {
+        return this.http.get(baseHref + '/tracks')
+            .pipe(
+                map(response => {
+                    return response["items"].map(track =>
+                        new SpotifyTrack({
+                            album: track["track"]["album"]["name"],
+                            artist: new SpotifyArtist({
+                                name: track["track"]["artists"][0]["name"],
+                                href: track["track"]["artist"][0]["href"],
+                                id: track["track"]["artist"][0]["id"],
+                                uri: track["track"]["artist"][0]["uri"]
+                            }),
+                            name: track["track"]["name"],
+                            uri: track["track"]["uri"]
+                        })
+                    );
+                })
             );
+    }
+
+    getListOfArtistsTopTracks(baseHref): Observable<SpotifyTrack[]> {
+        return this.http.get(baseHref + '/top-tracks?country=from_token')
+            .pipe(
+                map(response => {
+                    return response["tracks"].map(track =>
+                        new SpotifyTrack({
+                            album: track["album"]["name"],
+                            artist: track["artists"][0]["name"],
+                            name: track["name"],
+                            uri: track["uri"]
+                        })
+                    );
+                })
+            )
     }
 }

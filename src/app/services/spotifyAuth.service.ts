@@ -10,7 +10,16 @@ export class SpotifyAuthService {
     private token: string;
     private spotifyConfig: SpotifyConfig;
 
-    private scopes: string[] = ["streaming", "user-read-birthdate", "user-read-email", "user-read-private", "playlist-read-private", "playlist-read-collaborative"];
+    private scopes: string[] = [
+        "streaming",
+        "app-remote-control",
+        "user-read-birthdate",
+        "user-read-email",
+        "user-read-private",
+        "playlist-read-private",
+        "playlist-read-collaborative",
+        "user-library-read"
+    ];
 
     constructor(private http: HttpClient) {
         this.spotifyConfig = new SpotifyConfig();
