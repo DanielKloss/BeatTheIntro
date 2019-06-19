@@ -5,7 +5,8 @@ import { SpotifyApiService } from '../services/spotifyApi.service';
 import { SpotifyPlaylist } from '../models/spotifyPlaylist';
 import { SpotifyTrack } from '../models/spotifyTrack';
 import { SpotifyArtist } from '../models/spotifyArtist';
-import { SpotifyAlbum } from '../models/spotifyAlbum';
+import { Question } from '../models/question';
+import { QuestionConstructor } from '../helpers/questionConstructor';
 
 @Component({
   selector: 'app-spotify',
@@ -14,12 +15,15 @@ import { SpotifyAlbum } from '../models/spotifyAlbum';
 })
 export class SpotifyPage implements OnInit {
 
+  questionConstructor: QuestionConstructor;
+
   private token;
   private player;
 
   private tracks: SpotifyTrack[] = [];
   private artists: SpotifyArtist[] = [];
   private trackNumber: number = 0;
+  private question: Question;
 
   constructor(private spotifyAuthService: SpotifyAuthService, private spotifyApiService: SpotifyApiService) { }
 
@@ -58,6 +62,11 @@ export class SpotifyPage implements OnInit {
     await this.getSongsFromPlaylist();
     await this.getSongsFromArtist();
     await this.getSongsFromLibrary();
+
+    await this.getAllTracksForArtists();
+
+    this.questionConstructor = new QuestionConstructor(this.tracks, this.artists, this.trackNumber);
+    this.question = this.questionConstructor.constructQuestion();
   }
 
   async getSongsFromPlaylist() {
@@ -87,6 +96,15 @@ export class SpotifyPage implements OnInit {
       }
       if (this.artists.find(t => t.id == tracks[i].artist.id) == null) {
         this.artists.push(tracks[i].artist);
+      }
+    }
+  }
+
+  async getAllTracksForArtists() {
+    for (let i = 0; i < this.artists.length; i++) {
+      let albums = await this.spotifyApiService.getAlbumsForArtist(this.artists[i].href).toPromise();
+      for (let j = 0; j < albums.length; j++) {
+        this.artists[i].tracks = this.artists[i].tracks.concat(await this.spotifyApiService.getTracksForArtist(albums[j].href).toPromise());
       }
     }
   }

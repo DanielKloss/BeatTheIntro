@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators';
 import { SpotifyPlaylist } from '../models/spotifyPlaylist';
 import { SpotifyTrack } from '../models/spotifyTrack';
 import { SpotifyArtist } from '../models/spotifyArtist';
+import { SpotifyAlbum } from '../models/spotifyAlbum';
 
 @Injectable({ providedIn: 'root' })
 export class SpotifyApiService {
@@ -109,4 +110,32 @@ export class SpotifyApiService {
                 })
             )
     }
+
+    getAlbumsForArtist(baseHref): Observable<SpotifyAlbum[]> {
+        return this.http.get(baseHref + '/albums?include_groups=album&country=from_token')
+            .pipe(
+                map(response => {
+                    return response["items"].map(album =>
+                        new SpotifyAlbum({
+                            name: album["name"],
+                            href: album["href"]
+                        })
+                    );
+                })
+            )
+    }
+
+    getTracksForArtist(baseHref): Observable<SpotifyTrack[]> {
+        return this.http.get(baseHref + '/tracks')
+            .pipe(
+                map(response => {
+                    return response["items"].map(track =>
+                        new SpotifyTrack({
+                            name: track["name"]
+                        })
+                    );
+                })
+            )
+    }
 }
+

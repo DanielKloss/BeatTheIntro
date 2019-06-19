@@ -1,3 +1,5 @@
+import { SpotifyTrack } from "./spotifyTrack";
+
 export class SpotifyArtist {
     public constructor(init?: Partial<SpotifyArtist>) {
         Object.assign(this, init);
@@ -7,4 +9,5 @@ export class SpotifyArtist {
     href: string;
     uri: string;
     id: string;
+    tracks: SpotifyTrack[] = [];
 }
