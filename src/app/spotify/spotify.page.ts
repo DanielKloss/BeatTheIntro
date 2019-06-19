@@ -85,7 +85,7 @@ export class SpotifyPage implements OnInit {
       if (this.tracks.find(t => t.uri == tracks[i].uri) == null) {
         this.tracks.push(tracks[i]);
       }
-      if (this.artists.find(t => t.id == tracks[i].artist.id) == null){
+      if (this.artists.find(t => t.id == tracks[i].artist.id) == null) {
         this.artists.push(tracks[i].artist);
       }
     }

@@ -56,9 +56,9 @@ export class SpotifyApiService {
                             album: track["track"]["album"]["name"],
                             artist: new SpotifyArtist({
                                 name: track["track"]["artists"][0]["name"],
-                                href: track["track"]["artist"][0]["href"],
-                                id: track["track"]["artist"][0]["id"],
-                                uri: track["track"]["artist"][0]["uri"]
+                                href: track["track"]["artists"][0]["href"],
+                                id: track["track"]["artists"][0]["id"],
+                                uri: track["track"]["artists"][0]["uri"]
                             }),
                             name: track["track"]["name"],
                             uri: track["track"]["uri"]
@@ -77,9 +77,9 @@ export class SpotifyApiService {
                             album: track["track"]["album"]["name"],
                             artist: new SpotifyArtist({
                                 name: track["track"]["artists"][0]["name"],
-                                href: track["track"]["artist"][0]["href"],
-                                id: track["track"]["artist"][0]["id"],
-                                uri: track["track"]["artist"][0]["uri"]
+                                href: track["track"]["artists"][0]["href"],
+                                id: track["track"]["artists"][0]["id"],
+                                uri: track["track"]["artists"][0]["uri"]
                             }),
                             name: track["track"]["name"],
                             uri: track["track"]["uri"]
@@ -96,7 +96,12 @@ export class SpotifyApiService {
                     return response["tracks"].map(track =>
                         new SpotifyTrack({
                             album: track["album"]["name"],
-                            artist: track["artists"][0]["name"],
+                            artist: new SpotifyArtist({
+                                name: track["artists"][0]["name"],
+                                href: track["artists"][0]["href"],
+                                id: track["artists"][0]["id"],
+                                uri: track["artists"][0]["uri"]
+                            }),
                             name: track["name"],
                             uri: track["uri"]
                         })
