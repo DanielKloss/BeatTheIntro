@@ -20,6 +20,9 @@ export class SpotifyPage implements OnInit {
   private token;
   private player;
 
+  private playerReady: boolean = false;
+  private questionsReady: boolean = false;
+
   private tracks: SpotifyTrack[] = [];
   private artists: SpotifyArtist[] = [];
   private trackNumber: number = 0;
@@ -44,14 +47,18 @@ export class SpotifyPage implements OnInit {
 
       this.player.addListener('ready', ({ device_id }) => {
         console.log('Ready with Device ID', device_id);
-        console.log("play " + this.tracks[this.trackNumber].name);
-        //this.playSong(this.tracks[this.trackNumber].uri);
+        this.playerReady = true;
+        if (this.questionsReady) {
+          console.log("play " + this.tracks[this.trackNumber].name);
+          this.playSong(this.tracks[this.trackNumber].uri);
+        }
       });
 
       this.player.addListener('player_state_changed', state => {
         if (state.paused == true) {
           this.trackNumber++;
-          //this.playSong(this.tracks[this.trackNumber].uri);
+          this.question = this.questionConstructor.constructQuestion();
+          this.playSong(this.tracks[this.trackNumber].uri);
           console.log("play " + this.tracks[this.trackNumber].name);
         }
       });
@@ -59,14 +66,21 @@ export class SpotifyPage implements OnInit {
       this.player.connect();
     }
 
-    await this.getSongsFromPlaylist();
+    //await this.getSongsFromPlaylist();
     await this.getSongsFromArtist();
-    await this.getSongsFromLibrary();
+    //await this.getSongsFromLibrary();
 
     await this.getAllTracksForArtists();
 
     this.questionConstructor = new QuestionConstructor(this.tracks, this.artists, this.trackNumber);
     this.question = this.questionConstructor.constructQuestion();
+
+    this.questionsReady = true;
+
+    if (this.playerReady) {
+      console.log("play " + this.tracks[this.trackNumber].name);
+      this.playSong(this.tracks[this.trackNumber].uri);
+    }
   }
 
   async getSongsFromPlaylist() {

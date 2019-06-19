@@ -18,7 +18,8 @@ export class SpotifyAuthService {
         "user-read-private",
         "playlist-read-private",
         "playlist-read-collaborative",
-        "user-library-read"
+        "user-library-read",
+        "user-follow-read"
     ];
 
     constructor(private http: HttpClient) {
