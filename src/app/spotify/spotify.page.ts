@@ -30,7 +30,9 @@ export class SpotifyPage implements OnInit {
       this.spotifyAuthService.generateToken();
     }
 
+    //@ts-ignore
     window.onSpotifyPlayerAPIReady = () => {
+      //@ts-ignore
       this.player = new Spotify.Player({
         name: 'Beat The Intro',
         getOAuthToken: cb => { cb(this.token); }

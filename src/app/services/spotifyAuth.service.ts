@@ -39,7 +39,7 @@ export class SpotifyAuthService {
             }, {});
         window.location.hash = '';
 
-        // Set token
+        //@ts-ignore
         this.token = hash.access_token;
         return this.token;
     }

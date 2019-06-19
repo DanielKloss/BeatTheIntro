@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
-import { Observable, of } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { SpotifyPlaylist } from '../models/spotifyPlaylist';
 import { SpotifyTrack } from '../models/spotifyTrack';
-import { SpotifyAlbum } from '../models/spotifyAlbum';
 import { SpotifyArtist } from '../models/spotifyArtist';
 
 @Injectable({ providedIn: 'root' })
