@@ -1,9 +1,12 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>spotify</ion-title>
+    <ion-title>Beat the Intro</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-
+  <button *ngIf="questionsReady == true" (click)="start()">Start</button>
+  <p>{{score}}</p>
+  <button *ngFor="let answer of question?.artistAnswers"
+    (click)="submitAnswer(answer.answer)">{{answer.answer}}</button>
 </ion-content>

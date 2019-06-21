@@ -1,4 +1,3 @@
-import { SpotifyArtist } from "./spotifyArtist";
 import { SpotifyTrack } from "./spotifyTrack";
 
 export class Question {
@@ -8,6 +7,15 @@ export class Question {
     }
 
     track: SpotifyTrack;
-    artistAnswers: [SpotifyArtist, boolean][];
-    trackAnswers: [SpotifyTrack, boolean][];
+    artistAnswers: Answer[];
+    trackAnswers: Answer[];
+}
+
+export class Answer {
+    public constructor(init?: Partial<Answer>) {
+        Object.assign(this, init);
+    }
+
+    answer: string;
+    correct: boolean;
 }

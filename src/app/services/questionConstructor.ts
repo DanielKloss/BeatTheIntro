@@ -1,4 +1,4 @@
-import { Question } from "../models/question";
+import { Question, Answer } from "../models/question";
 import { SpotifyTrack } from "../models/spotifyTrack";
 import { SpotifyArtist } from "../models/spotifyArtist";
 
@@ -10,13 +10,14 @@ export class QuestionConstructor {
     artists: SpotifyArtist[];
     currentTrackNumber: number;
 
-    constructor(tracks: SpotifyTrack[], artists: SpotifyArtist[], currentTrackNumber: number) {
+    constructor(tracks: SpotifyTrack[], artists: SpotifyArtist[]) {
         this.tracks = tracks;
-        this.currentTrackNumber = currentTrackNumber;
         this.artists = artists;
+        console.log(this.artists);
     }
 
-    constructQuestion(): Question {
+    constructQuestion(currentTrackNumber: number): Question {
+        this.currentTrackNumber = currentTrackNumber;
         this.question = new Question();
         this.question.track = this.tracks[this.currentTrackNumber];
 
@@ -27,9 +28,9 @@ export class QuestionConstructor {
     }
 
     generateArtistAnswers() {
-        this.question.artistAnswers.push([this.artists.splice(this.artists.indexOf(this.tracks[this.currentTrackNumber].artist), 1)[0], true]);
+        this.question.artistAnswers.push(new Answer({ answer: this.artists.splice(this.artists.indexOf(this.tracks[this.currentTrackNumber].artist), 1)[0].name, correct: true }));
         for (let i = 0; i < 3; i++) {
-            this.question.artistAnswers.push([this.artists.splice(Math.floor(Math.random() * this.artists.length), 1)[0], false]);
+            this.question.artistAnswers.push(new Answer({ answer: this.artists.splice(Math.floor(Math.random() * this.artists.length), 1)[0].name, correct: false }));
         }
         for (let i = 0; i < this.question.artistAnswers.length; i++) {
             this.artists.push(this.question.artistAnswers[i][0]);
@@ -39,7 +40,7 @@ export class QuestionConstructor {
     generateTrackAnswers() {
         let currentArtist = this.artists.find(a => a.id == this.tracks[this.currentTrackNumber].artist.id);
 
-        this.question.trackAnswers.push([currentArtist.tracks.find(t => t.name == this.tracks[this.currentTrackNumber].name), true]);
+        this.question.trackAnswers.push(new Answer({ answer: currentArtist.tracks.find(t => t.name == this.tracks[this.currentTrackNumber].name).name, correct: true }));
 
         for (let i = 0; i < currentArtist.tracks.length; i++) {
             if (currentArtist.tracks[i].name == this.tracks[this.currentTrackNumber].name) {
@@ -48,7 +49,7 @@ export class QuestionConstructor {
         }
 
         for (let i = 0; i < 3; i++) {
-            this.question.trackAnswers.push([currentArtist.tracks.splice(Math.floor(Math.random() * currentArtist.tracks.length), 1)[0], false]);
+            this.question.trackAnswers.push(new Answer({ answer: currentArtist.tracks.splice(Math.floor(Math.random() * currentArtist.tracks.length), 1)[0].name, correct: false }));
         }
 
         for (let i = 0; i < this.question.trackAnswers.length; i++) {

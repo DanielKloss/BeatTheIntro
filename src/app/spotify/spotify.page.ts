@@ -6,7 +6,7 @@ import { SpotifyPlaylist } from '../models/spotifyPlaylist';
 import { SpotifyTrack } from '../models/spotifyTrack';
 import { SpotifyArtist } from '../models/spotifyArtist';
 import { Question } from '../models/question';
-import { QuestionConstructor } from '../helpers/questionConstructor';
+import { QuestionConstructor } from '../services/questionConstructor';
 
 @Component({
   selector: 'app-spotify',
@@ -22,6 +22,7 @@ export class SpotifyPage implements OnInit {
 
   private playerReady: boolean = false;
   private questionsReady: boolean = false;
+  private score: number = 0;
 
   private tracks: SpotifyTrack[] = [];
   private artists: SpotifyArtist[] = [];
@@ -48,39 +49,47 @@ export class SpotifyPage implements OnInit {
       this.player.addListener('ready', ({ device_id }) => {
         console.log('Ready with Device ID', device_id);
         this.playerReady = true;
-        if (this.questionsReady) {
-          console.log("play " + this.tracks[this.trackNumber].name);
-          this.playSong(this.tracks[this.trackNumber].uri);
-        }
-      });
-
-      this.player.addListener('player_state_changed', state => {
-        if (state.paused == true) {
-          this.trackNumber++;
-          this.question = this.questionConstructor.constructQuestion();
-          this.playSong(this.tracks[this.trackNumber].uri);
-          console.log("play " + this.tracks[this.trackNumber].name);
-        }
       });
 
       this.player.connect();
     }
 
     //await this.getSongsFromPlaylist();
-    await this.getSongsFromArtist();
+    this.questionsReady = await this.getSongsFromArtist();
     //await this.getSongsFromLibrary();
 
-    await this.getAllTracksForArtists();
-
-    this.questionConstructor = new QuestionConstructor(this.tracks, this.artists, this.trackNumber);
-    this.question = this.questionConstructor.constructQuestion();
+    this.questionsReady = await this.getAllTracksForArtists();
 
     this.questionsReady = true;
+  }
 
+  start() {
     if (this.playerReady) {
-      console.log("play " + this.tracks[this.trackNumber].name);
-      this.playSong(this.tracks[this.trackNumber].uri);
+      console.log(this.artists);
+
+      this.questionConstructor = new QuestionConstructor(this.tracks, this.artists);
+      this.question = this.questionConstructor.constructQuestion(this.trackNumber);
+
+      console.log("play " + this.question.track.name);
+      this.playSong(this.question.track.uri);
+    } else {
+      console.log("player not ready");
     }
+  }
+
+  submitAnswer(answer) {
+    if (answer == this.question.artistAnswers.find(a => a.correct == true).answer) {
+      console.log("correct");
+      this.score++;
+    }
+
+    this.trackNumber++;
+    this.question = this.questionConstructor.constructQuestion(this.trackNumber);
+
+    console.log(this.score);
+
+    console.log("play " + this.question.track.name);
+    this.playSong(this.question.track.uri);
   }
 
   async getSongsFromPlaylist() {
@@ -91,12 +100,14 @@ export class SpotifyPage implements OnInit {
     }
   }
 
-  async getSongsFromArtist() {
+  async getSongsFromArtist(): Promise<boolean> {
     let artists: SpotifyArtist[] = await this.spotifyApiService.getArtists().toPromise();
 
     for (let i = 0; i < artists.length; i++) {
       this.addTracksToQueue(await this.spotifyApiService.getListOfArtistsTopTracks(artists[i].href).toPromise());
     }
+
+    return true;
   }
 
   async getSongsFromLibrary() {
@@ -114,13 +125,14 @@ export class SpotifyPage implements OnInit {
     }
   }
 
-  async getAllTracksForArtists() {
+  async getAllTracksForArtists(): Promise<boolean> {
     for (let i = 0; i < this.artists.length; i++) {
       let albums = await this.spotifyApiService.getAlbumsForArtist(this.artists[i].href).toPromise();
       for (let j = 0; j < albums.length; j++) {
         this.artists[i].tracks = this.artists[i].tracks.concat(await this.spotifyApiService.getTracksForArtist(albums[j].href).toPromise());
       }
     }
+    return true;
   }
 
   playSong(songUri) {
