@@ -64,8 +64,10 @@ export class SpotifyPage implements OnInit {
     await this.getSongsFromPlaylist();
     console.log("Got songs from playlists")
 
-    await this.getAllTracksForArtists();
-    console.log("Got songs from artists")
+    console.log(this.artists);
+
+    //await this.getAllTracksForArtists();
+    //console.log("Got songs from artists")
 
     console.log("questions ready");
     this.questionsReady = true;
@@ -137,11 +139,6 @@ export class SpotifyPage implements OnInit {
     for (let i = 0; i < this.artists.length; i++) {
       let albums = await this.spotifyApiService.getAlbumsForArtist(this.artists[i].href);
       for (let j = 0; j < albums.length; j++) {
-        if (albums[j].href == null) {
-          console.log(albums[j].name);
-          console.log(albums[j].artist);
-          console.log(albums[j].id);
-        }
         this.artists[i].tracks = this.artists[i].tracks.concat(await this.spotifyApiService.getTracksForArtist(albums[j].href));
       }
     }
