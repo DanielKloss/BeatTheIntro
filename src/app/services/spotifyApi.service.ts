@@ -14,8 +14,8 @@ export class SpotifyApiService {
 
     constructor(private http: HttpClient) { }
 
-    getPlaylists(): Observable<SpotifyPlaylist[]> {
-        return this.http.get('https://api.spotify.com/v1/me/playlists')
+    async getPlaylists(): Promise<SpotifyPlaylist[]> {
+        return await this.http.get('https://api.spotify.com/v1/me/playlists')
             .pipe(
                 map(response => {
                     return response["items"].map(playlist =>
@@ -29,11 +29,11 @@ export class SpotifyApiService {
                         })
                     );
                 })
-            );
+            ).toPromise();
     }
 
-    getArtists(): Observable<SpotifyArtist[]> {
-        return this.http.get('https://api.spotify.com/v1/me/following?type=artist')
+    async getArtists(): Promise<SpotifyArtist[]> {
+        return await this.http.get('https://api.spotify.com/v1/me/following?type=artist')
             .pipe(
                 map(response => {
                     return response["artists"]["items"].map(artist =>
@@ -45,11 +45,11 @@ export class SpotifyApiService {
                         })
                     );
                 })
-            )
+            ).toPromise();
     }
 
-    getSongs(): Observable<SpotifyTrack[]> {
-        return this.http.get('https://api.spotify.com/v1/me/tracks')
+    async getSongs(): Promise<SpotifyTrack[]> {
+        return await this.http.get('https://api.spotify.com/v1/me/tracks')
             .pipe(
                 map(response => {
                     return response["items"].map(track =>
@@ -66,11 +66,11 @@ export class SpotifyApiService {
                         })
                     );
                 })
-            )
+            ).toPromise();
     }
 
-    getListOfTracksFromPlaylist(baseHref): Observable<SpotifyTrack[]> {
-        return this.http.get(baseHref + '/tracks')
+    async getListOfTracksFromPlaylist(baseHref): Promise<SpotifyTrack[]> {
+        return await this.http.get(baseHref + '/tracks')
             .pipe(
                 map(response => {
                     return response["items"].map(track =>
@@ -87,11 +87,11 @@ export class SpotifyApiService {
                         })
                     );
                 })
-            );
+            ).toPromise();
     }
 
-    getListOfArtistsTopTracks(baseHref): Observable<SpotifyTrack[]> {
-        return this.http.get(baseHref + '/top-tracks?country=from_token')
+    async getListOfArtistsTopTracks(baseHref): Promise<SpotifyTrack[]> {
+        return await this.http.get(baseHref + '/top-tracks?country=from_token')
             .pipe(
                 map(response => {
                     return response["tracks"].map(track =>
@@ -108,11 +108,11 @@ export class SpotifyApiService {
                         })
                     );
                 })
-            )
+            ).toPromise();
     }
 
-    getAlbumsForArtist(baseHref): Observable<SpotifyAlbum[]> {
-        return this.http.get(baseHref + '/albums?include_groups=album&country=from_token')
+    async getAlbumsForArtist(baseHref): Promise<SpotifyAlbum[]> {
+        return await this.http.get(baseHref + '/albums?include_groups=album&country=from_token')
             .pipe(
                 map(response => {
                     return response["items"].map(album =>
@@ -122,11 +122,11 @@ export class SpotifyApiService {
                         })
                     );
                 })
-            )
+            ).toPromise();
     }
 
-    getTracksForArtist(baseHref): Observable<SpotifyTrack[]> {
-        return this.http.get(baseHref + '/tracks')
+    async getTracksForArtist(baseHref): Promise<SpotifyTrack[]> {
+        return await this.http.get(baseHref + '/tracks')
             .pipe(
                 map(response => {
                     return response["items"].map(track =>
@@ -135,7 +135,7 @@ export class SpotifyApiService {
                         })
                     );
                 })
-            )
+            ).toPromise();
     }
 }
 

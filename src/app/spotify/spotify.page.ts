@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { forkJoin } from 'rxjs';
 
 import { SpotifyAuthService } from '../services/spotifyAuth.service';
 import { SpotifyApiService } from '../services/spotifyApi.service';
@@ -54,12 +55,19 @@ export class SpotifyPage implements OnInit {
       this.player.connect();
     }
 
-    //await this.getSongsFromPlaylist();
-    this.questionsReady = await this.getSongsFromArtist();
-    //await this.getSongsFromLibrary();
+    await this.getSongsFromArtist();
+    console.log("Got songs from artists followed")
 
-    this.questionsReady = await this.getAllTracksForArtists();
+    await this.getSongsFromLibrary();
+    console.log("Got songs from library")
 
+    await this.getSongsFromPlaylist();
+    console.log("Got songs from playlists")
+
+    await this.getAllTracksForArtists();
+    console.log("Got songs from artists")
+
+    console.log("questions ready");
     this.questionsReady = true;
   }
 
@@ -93,25 +101,25 @@ export class SpotifyPage implements OnInit {
   }
 
   async getSongsFromPlaylist() {
-    let playlists: SpotifyPlaylist[] = await this.spotifyApiService.getPlaylists().toPromise();
+    let playlists: SpotifyPlaylist[] = await this.spotifyApiService.getPlaylists();
 
     for (let i = 0; i < playlists.length; i++) {
-      this.addTracksToQueue(await this.spotifyApiService.getListOfTracksFromPlaylist(playlists[i].href).toPromise());
+      this.addTracksToQueue(await this.spotifyApiService.getListOfTracksFromPlaylist(playlists[i].href));
     }
   }
 
-  async getSongsFromArtist(): Promise<boolean> {
-    let artists: SpotifyArtist[] = await this.spotifyApiService.getArtists().toPromise();
+  async getSongsFromArtist() {
+    let artists: SpotifyArtist[] = await this.spotifyApiService.getArtists();
 
     for (let i = 0; i < artists.length; i++) {
-      this.addTracksToQueue(await this.spotifyApiService.getListOfArtistsTopTracks(artists[i].href).toPromise());
+      let tracks: SpotifyTrack[] = await this.spotifyApiService.getListOfArtistsTopTracks(artists[i].href);
+      this.addTracksToQueue(tracks);
     }
-
-    return true;
   }
 
   async getSongsFromLibrary() {
-    this.addTracksToQueue(await this.spotifyApiService.getSongs().toPromise());
+    let tracks: SpotifyTrack[] = await this.spotifyApiService.getSongs();
+    this.addTracksToQueue(tracks);
   }
 
   addTracksToQueue(tracks: SpotifyTrack[]) {
@@ -125,14 +133,18 @@ export class SpotifyPage implements OnInit {
     }
   }
 
-  async getAllTracksForArtists(): Promise<boolean> {
+  async getAllTracksForArtists() {
     for (let i = 0; i < this.artists.length; i++) {
-      let albums = await this.spotifyApiService.getAlbumsForArtist(this.artists[i].href).toPromise();
+      let albums = await this.spotifyApiService.getAlbumsForArtist(this.artists[i].href);
       for (let j = 0; j < albums.length; j++) {
-        this.artists[i].tracks = this.artists[i].tracks.concat(await this.spotifyApiService.getTracksForArtist(albums[j].href).toPromise());
+        if (albums[j].href == null) {
+          console.log(albums[j].name);
+          console.log(albums[j].artist);
+          console.log(albums[j].id);
+        }
+        this.artists[i].tracks = this.artists[i].tracks.concat(await this.spotifyApiService.getTracksForArtist(albums[j].href));
       }
     }
-    return true;
   }
 
   playSong(songUri) {
