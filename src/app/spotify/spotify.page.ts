@@ -54,6 +54,18 @@ export class SpotifyPage implements OnInit {
         this.playerReady = true;
       });
 
+      this.player.addListener('player_state_changed', state => {
+        if (state.paused == true && state.track_window.current_track.uri == this.question.track.uri) {
+          this.trackNumber++;
+          this.question = this.questionConstructor.constructQuestion(this.trackNumber);
+
+          this.artistAnswers = true;
+          this.trackAnswers = false;
+          console.log("playing " + this.question.track.name);
+          this.playSong(this.question.track.uri);
+        }
+      });
+
       this.player.connect();
     }
 
