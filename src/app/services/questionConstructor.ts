@@ -23,15 +23,16 @@ export class QuestionConstructor {
         this.generateArtistAnswers();
         this.generateTrackAnswers();
 
+        this.question.artistAnswers = this.shuffleList(this.question.artistAnswers);
+        this.question.trackAnswers = this.shuffleList(this.question.trackAnswers);
+
         return this.question;
     }
 
     generateArtistAnswers() {
         let artistAnswers = [];
 
-        let currentArtist;
-
-        currentArtist = this.artists.splice(this.artists.findIndex(a => a.id == this.tracks[this.currentTrackNumber].artist.id), 1)[0];
+        let currentArtist = this.artists.splice(this.artists.findIndex(a => a.id == this.tracks[this.currentTrackNumber].artist.id), 1)[0];
         this.question.artistAnswers.push(new Answer({ answer: currentArtist.name, correct: true }));
         artistAnswers.push(currentArtist);
 
@@ -45,12 +46,18 @@ export class QuestionConstructor {
     }
 
     generateTrackAnswers() {
-        let currentArtist = this.artists.find(a => a.id == this.tracks[this.currentTrackNumber].artist.id);
-
         let trackAnswers = [];
         let currentTrack;
+        let currentArtist = this.artists.find(a => a.id == this.tracks[this.currentTrackNumber].artist.id);
 
-        currentTrack = currentArtist.tracks.splice(currentArtist.tracks.findIndex(t => t.uri == this.tracks[this.currentTrackNumber].uri, 1))[0];
+        let trackindex = currentArtist.tracks.findIndex(t => t.uri == this.tracks[this.currentTrackNumber].uri);
+
+        if (trackindex == -1) {
+            currentTrack = this.tracks[this.currentTrackNumber]
+        } else {
+            currentTrack = currentArtist.tracks.splice(trackindex, 1)[0];
+        }
+
         this.question.trackAnswers.push(new Answer({ answer: currentTrack.name, correct: true }));
         trackAnswers.push(currentTrack);
 
@@ -61,5 +68,19 @@ export class QuestionConstructor {
         }
 
         currentArtist.tracks = currentArtist.tracks.concat(trackAnswers);
+    }
+
+    shuffleList(array) {
+        var currentIndex = array.length, temporaryValue, randomIndex;
+
+        while (0 !== currentIndex) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex -= 1;
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+
+        return array;
     }
 }

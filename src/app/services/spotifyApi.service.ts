@@ -131,7 +131,14 @@ export class SpotifyApiService {
                 map(response => {
                     return response["items"].map(track =>
                         new SpotifyTrack({
-                            name: track["name"]
+                            artist: new SpotifyArtist({
+                                name: track["artists"][0]["name"],
+                                href: track["artists"][0]["href"],
+                                id: track["artists"][0]["id"],
+                                uri: track["artists"][0]["uri"]
+                            }),
+                            name: track["name"],
+                            uri: track["uri"]
                         })
                     );
                 })

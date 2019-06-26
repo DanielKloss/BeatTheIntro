@@ -23,6 +23,9 @@ export class SpotifyPage implements OnInit {
 
   private playerReady: boolean = false;
   private questionsReady: boolean = false;
+  private artistAnswers: boolean;
+  private trackAnswers: boolean;
+
   private score: number = 0;
 
   private tracks: SpotifyTrack[] = [];
@@ -48,7 +51,6 @@ export class SpotifyPage implements OnInit {
       });
 
       this.player.addListener('ready', ({ device_id }) => {
-        console.log('Ready with Device ID', device_id);
         this.playerReady = true;
       });
 
@@ -60,35 +62,38 @@ export class SpotifyPage implements OnInit {
     //await this.getSongsFromPlaylist();
     await this.getAllTracksForArtists();
 
+    this.tracks = this.shuffleList(this.tracks);
+    this.artists = this.shuffleList(this.artists);
+
     this.questionsReady = true;
   }
 
   async start() {
-    if (this.playerReady) {
-
-      this.questionConstructor = new QuestionConstructor(this.tracks, this.artists);
-      this.question = this.questionConstructor.constructQuestion(this.trackNumber);
-
-      console.log("play " + this.question.track.name);
-      this.playSong(this.question.track.uri);
-    } else {
-      console.log("player not ready");
-    }
-  }
-
-  submitAnswer(answer) {
-    if (answer == this.question.artistAnswers.find(a => a.correct == true).answer) {
-      console.log("correct");
-      this.score++;
-    }
-
-    this.trackNumber++;
+    this.questionConstructor = new QuestionConstructor(this.tracks, this.artists);
     this.question = this.questionConstructor.constructQuestion(this.trackNumber);
 
-    console.log(this.score);
+    this.artistAnswers = true;
+    this.trackAnswers = false;
 
-    console.log("play " + this.question.track.name);
+    console.log("playing " + this.question.track.name);
     this.playSong(this.question.track.uri);
+  }
+
+  submitAnswer(answer, questionType) {
+    if (questionType == "artist" && answer == this.question.artistAnswers.find(a => a.correct == true).answer) {
+      this.score++;
+      this.artistAnswers = false;
+      this.trackAnswers = true;
+    } else if (questionType == "track" && answer == this.question.trackAnswers.find(t => t.correct == true).answer) {
+      this.score++;
+      this.trackNumber++;
+      this.question = this.questionConstructor.constructQuestion(this.trackNumber);
+
+      this.artistAnswers = true;
+      this.trackAnswers = false;
+      console.log("playing " + this.question.track.name);
+      this.playSong(this.question.track.uri);
+    }
   }
 
   async getSongsFromPlaylist() {
@@ -130,6 +135,20 @@ export class SpotifyPage implements OnInit {
         this.artists[i].tracks = this.artists[i].tracks.concat(await this.spotifyApiService.getTracksForArtist(albums[j].href));
       }
     }
+  }
+
+  shuffleList(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    while (0 !== currentIndex) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+
+    return array;
   }
 
   playSong(songUri) {

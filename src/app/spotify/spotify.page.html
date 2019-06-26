@@ -5,8 +5,16 @@
 </ion-header>
 
 <ion-content>
-  <button *ngIf="questionsReady == true" (click)="start()">Start</button>
+  <button *ngIf="questionsReady == true && playerReady == true" (click)="start()">Start</button>
   <p>{{score}}</p>
-  <button *ngFor="let answer of question?.artistAnswers"
-    (click)="submitAnswer(answer.answer)">{{answer.answer}}</button>
+  <div *ngIf="artistAnswers == true && trackAnswers == false">
+    <button *ngFor="let answer of question?.artistAnswers" (click)="submitAnswer(answer.answer, 'artist')">
+      {{answer.answer}}
+    </button>
+  </div>
+  <div *ngIf="artistAnswers == false && trackAnswers == true">
+    <button *ngFor="let answer of question?.trackAnswers" (click)="submitAnswer(answer.answer, 'track')">
+      {{answer.answer}}
+    </button>
+  </div>
 </ion-content>
