@@ -31,7 +31,7 @@ export class QuestionConstructor {
 
         let currentArtist;
 
-        currentArtist = this.artists.splice(this.artists.indexOf(this.tracks[this.currentTrackNumber].artist), 1)[0];
+        currentArtist = this.artists.splice(this.artists.findIndex(a => a.id == this.tracks[this.currentTrackNumber].artist.id), 1)[0];
         this.question.artistAnswers.push(new Answer({ answer: currentArtist.name, correct: true }));
         artistAnswers.push(currentArtist);
 
@@ -50,7 +50,7 @@ export class QuestionConstructor {
         let trackAnswers = [];
         let currentTrack;
 
-        currentTrack = currentArtist.tracks.splice(currentArtist.tracks.indexOf(this.tracks[this.currentTrackNumber], 1))[0];
+        currentTrack = currentArtist.tracks.splice(currentArtist.tracks.findIndex(t => t.uri == this.tracks[this.currentTrackNumber].uri, 1))[0];
         this.question.trackAnswers.push(new Answer({ answer: currentTrack.name, correct: true }));
         trackAnswers.push(currentTrack);
 
