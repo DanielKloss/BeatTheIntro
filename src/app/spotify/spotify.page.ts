@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { ChangeDetectorRef } from '@angular/core';
 
 import { SpotifyAuthService } from '../services/spotifyAuth.service';
 import { SpotifyApiService } from '../services/spotifyApi.service';
@@ -30,7 +30,7 @@ export class SpotifyPage implements OnInit {
   private trackNumber: number = 0;
   private question: Question;
 
-  constructor(private spotifyAuthService: SpotifyAuthService, private spotifyApiService: SpotifyApiService) { }
+  constructor(private spotifyAuthService: SpotifyAuthService, private spotifyApiService: SpotifyApiService, private cd: ChangeDetectorRef) { }
 
   async ngOnInit() {
     this.token = this.spotifyAuthService.getTokenFromUrl();
@@ -56,26 +56,15 @@ export class SpotifyPage implements OnInit {
     }
 
     await this.getSongsFromArtist();
-    console.log("Got songs from artists followed")
+    //await this.getSongsFromLibrary();
+    //await this.getSongsFromPlaylist();
+    await this.getAllTracksForArtists();
 
-    await this.getSongsFromLibrary();
-    console.log("Got songs from library")
-
-    await this.getSongsFromPlaylist();
-    console.log("Got songs from playlists")
-
-    console.log(this.artists);
-
-    //await this.getAllTracksForArtists();
-    //console.log("Got songs from artists")
-
-    console.log("questions ready");
     this.questionsReady = true;
   }
 
-  start() {
+  async start() {
     if (this.playerReady) {
-      console.log(this.artists);
 
       this.questionConstructor = new QuestionConstructor(this.tracks, this.artists);
       this.question = this.questionConstructor.constructQuestion(this.trackNumber);
@@ -114,14 +103,12 @@ export class SpotifyPage implements OnInit {
     let artists: SpotifyArtist[] = await this.spotifyApiService.getArtists();
 
     for (let i = 0; i < artists.length; i++) {
-      let tracks: SpotifyTrack[] = await this.spotifyApiService.getListOfArtistsTopTracks(artists[i].href);
-      this.addTracksToQueue(tracks);
+      this.addTracksToQueue(await this.spotifyApiService.getListOfArtistsTopTracks(artists[i].href));
     }
   }
 
   async getSongsFromLibrary() {
-    let tracks: SpotifyTrack[] = await this.spotifyApiService.getSongs();
-    this.addTracksToQueue(tracks);
+    this.addTracksToQueue(await this.spotifyApiService.getSongs());
   }
 
   addTracksToQueue(tracks: SpotifyTrack[]) {
@@ -129,8 +116,9 @@ export class SpotifyPage implements OnInit {
       if (this.tracks.find(t => t.uri == tracks[i].uri) == null) {
         this.tracks.push(tracks[i]);
       }
-      if (this.artists.find(t => t.id == tracks[i].artist.id) == null) {
-        this.artists.push(tracks[i].artist);
+      if (this.artists.find(t => t.id == tracks[i].artist.id) == null
+        && (tracks[i].artist.href != null && tracks[i].artist.uri != null)) {
+        this.artists.push(new SpotifyArtist({ name: tracks[i].artist.name, href: tracks[i].artist.href, id: tracks[i].artist.id, uri: tracks[i].artist.uri }));
       }
     }
   }
