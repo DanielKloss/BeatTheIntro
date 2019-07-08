@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { ChangeDetectorRef } from '@angular/core';
 
 import { SpotifyAuthService } from '../services/spotifyAuth.service';
 import { SpotifyApiService } from '../services/spotifyApi.service';
+import { DatabaseService } from '../services/database.service';
+
 import { SpotifyPlaylist } from '../models/spotifyPlaylist';
 import { SpotifyTrack } from '../models/spotifyTrack';
 import { SpotifyArtist } from '../models/spotifyArtist';
 import { Question } from '../models/question';
+
 import { QuestionConstructor } from '../services/questionConstructor';
 
 @Component({
@@ -33,7 +35,7 @@ export class SpotifyPage implements OnInit {
   private trackNumber: number = 0;
   private question: Question;
 
-  constructor(private spotifyAuthService: SpotifyAuthService, private spotifyApiService: SpotifyApiService, private cd: ChangeDetectorRef) { }
+  constructor(private spotifyAuthService: SpotifyAuthService, private spotifyApiService: SpotifyApiService, private databaseService: DatabaseService) { }
 
   async ngOnInit() {
     this.token = this.spotifyAuthService.getTokenFromUrl();
@@ -105,6 +107,8 @@ export class SpotifyPage implements OnInit {
       this.trackAnswers = false;
       console.log("playing " + this.question.track.name);
       this.playSong(this.question.track.uri);
+    } else {
+      this.score--;
     }
   }
 
@@ -120,7 +124,9 @@ export class SpotifyPage implements OnInit {
     let artists: SpotifyArtist[] = await this.spotifyApiService.getArtists();
 
     for (let i = 0; i < artists.length; i++) {
-      this.addTracksToQueue(await this.spotifyApiService.getListOfArtistsTopTracks(artists[i].href));
+      let tracks = await this.spotifyApiService.getListOfArtistsTopTracks(artists[i].href);
+      this.addTracksToQueue(tracks);
+      await this.databaseService.addTracksToDatabase(tracks);
     }
   }
 
