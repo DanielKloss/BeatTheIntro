@@ -71,10 +71,15 @@ export class SpotifyPage implements OnInit {
       this.player.connect();
     }
 
-    await this.getSongsFromArtist();
-    //await this.getSongsFromLibrary();
-    //await this.getSongsFromPlaylist();
-    await this.getAllTracksForArtists();
+    if(this.databaseService.databaseEmpty()){
+      await this.getSongsFromArtist();
+      //await this.getSongsFromLibrary();
+      //await this.getSongsFromPlaylist();
+      await this.getAllTracksForArtists();
+    } else {
+      this.tracks = await this.databaseService.getTracksFromDatabase();
+      this.artists = await this.databaseService.getArtistsFromDatabase();
+    }
 
     this.tracks = this.shuffleList(this.tracks);
     this.artists = this.shuffleList(this.artists);
@@ -116,7 +121,9 @@ export class SpotifyPage implements OnInit {
     let playlists: SpotifyPlaylist[] = await this.spotifyApiService.getPlaylists();
 
     for (let i = 0; i < playlists.length; i++) {
-      this.addTracksToQueue(await this.spotifyApiService.getListOfTracksFromPlaylist(playlists[i].href));
+      let tracks = await this.spotifyApiService.getListOfTracksFromPlaylist(playlists[i].href)
+      this.addTracksToQueue(tracks);
+      await this.databaseService.addTracksToDatabase(tracks);
     }
   }
 
@@ -131,7 +138,9 @@ export class SpotifyPage implements OnInit {
   }
 
   async getSongsFromLibrary() {
-    this.addTracksToQueue(await this.spotifyApiService.getSongs());
+    let tracks = await this.spotifyApiService.getSongs();
+    this.addTracksToQueue(tracks);
+    await this.databaseService.addTracksToDatabase(tracks);
   }
 
   addTracksToQueue(tracks: SpotifyTrack[]) {
@@ -150,7 +159,9 @@ export class SpotifyPage implements OnInit {
     for (let i = 0; i < this.artists.length; i++) {
       let albums = await this.spotifyApiService.getAlbumsForArtist(this.artists[i].href);
       for (let j = 0; j < albums.length; j++) {
-        this.artists[i].tracks = this.artists[i].tracks.concat(await this.spotifyApiService.getTracksForArtist(albums[j].href));
+        let tracks = await this.spotifyApiService.getTracksForArtist(albums[j].href);
+        this.artists[i].tracks = this.artists[i].tracks.concat(tracks);
+        await this.databaseService.addTracksToDatabase(tracks);
       }
     }
   }
